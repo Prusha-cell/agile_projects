@@ -19,3 +19,9 @@ class CreateProjectSerializer(serializers.ModelSerializer):
         if len(value) < 30:
             raise serializers.ValidationError("Description must be at least 30 characters long")
         return value
+
+
+class ProjectDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ('id', 'name', 'description', 'count_of_files')

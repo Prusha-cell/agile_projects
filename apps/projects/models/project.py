@@ -8,7 +8,7 @@ class Project(models.Model):
     files = models.ManyToManyField('ProjectFile', related_name='projects')
 
     class Meta:
-        ordering = ['name']
+        ordering = ['id']
 
     def __str__(self):
         return self.name

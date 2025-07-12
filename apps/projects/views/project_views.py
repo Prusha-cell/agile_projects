@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import datetime
 from apps.projects.models import Project
@@ -6,7 +7,11 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 
-from apps.projects.serializers.project_serializers import AllProjectsSerializer, CreateProjectSerializer
+from apps.projects.serializers.project_serializers import (
+    AllProjectsSerializer,
+    CreateProjectSerializer,
+    ProjectDetailSerializer,
+)
 
 
 class ProjectsListAPIView(APIView):
@@ -45,3 +50,33 @@ class ProjectsListAPIView(APIView):
             return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProjectDetailAPIView(APIView):
+    def get_object(self, pk: int):
+        return get_object_or_404(Project, pk=pk)
+
+    def get(self, request: Request, pk: int) -> Response:
+        project = self.get_object(pk=pk)
+        serializer = ProjectDetailSerializer(project)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request: Request, pk: int) -> Response:
+        project = self.get_object(pk=pk)
+        serializer = CreateProjectSerializer(
+            instance=project,
+            data=request.data,
+            partial=True
+        )
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request: Request, pk: int) -> Response:
+        project = self.get_object(pk=pk)
+        project.delete()
+        return Response(data={"message": "Project was deleted successfully"},
+                        status=status.HTTP_200_OK,
+                        )
